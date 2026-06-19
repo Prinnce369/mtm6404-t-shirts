@@ -4,9 +4,105 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>T-Shirts</title>
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- React + Babel via CDN (no build tools needed) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+
+  <!-- Provided data file: defines the global `tshirts` array -->
+  <script src="t-shirts.js"></script>
 </head>
 <body>
-  
-  
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // A single t-shirt card.
+    function TShirt({ shirt, onQuantityChange, onBuy }) {
+      const { title, image, price, stock, quantity } = shirt;
+
+      // Build the list of selectable quantities: 1 up to the available stock,
+      // so the user can never choose more than what's left.
+      const options = [];
+      for (let n = 1; n <= stock; n++) {
+        options.push(n);
+      }
+
+      return (
+        <article className="card">
+          <img className="card__img" src={`images/${image}`} alt={title} />
+          <h2 className="card__title">{title}</h2>
+          <p className="card__price">${price.toFixed(2)}</p>
+
+          {stock > 0 ? (
+            <p className="card__stock">{stock} in stock</p>
+          ) : (
+            <p className="card__stock card__stock--out">Out of Stock</p>
+          )}
+
+          {stock > 0 && (
+            <div className="card__actions">
+              <select
+                className="card__select"
+                value={quantity}
+                onChange={(e) => onQuantityChange(Number(e.target.value))}
+              >
+                {options.map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+              <button className="card__buy" onClick={onBuy}>Buy</button>
+            </div>
+          )}
+        </article>
+      );
+    }
+
+    function App() {
+      // Copy the provided data into state so the UI re-renders on changes.
+      const [shirts, setShirts] = useState(tshirts);
+
+      // Remember how many the user picked in a card's select box.
+      function handleQuantityChange(index, qty) {
+        setShirts((prev) =>
+          prev.map((s, i) => (i === index ? { ...s, quantity: qty } : s))
+        );
+      }
+
+      // Buying reduces that shirt's stock by the selected quantity.
+      function handleBuy(index) {
+        setShirts((prev) =>
+          prev.map((s, i) => {
+            if (i !== index) return s;
+            return { ...s, stock: s.stock - s.quantity, quantity: 1 };
+          })
+        );
+      }
+
+      return (
+        <div>
+          <header className="site-header">
+            <h1>T-Shirts</h1>
+          </header>
+          <main className="grid">
+            {shirts.map((shirt, index) => (
+              <TShirt
+                key={shirt.title}
+                shirt={shirt}
+                onQuantityChange={(qty) => handleQuantityChange(index, qty)}
+                onBuy={() => handleBuy(index)}
+              />
+            ))}
+          </main>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
 </body>
 </html>

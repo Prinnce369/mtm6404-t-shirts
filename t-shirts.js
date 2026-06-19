@@ -29,7 +29,7 @@ const tshirts = [
   },
   {
     title: 'Grey T-Shirt',
-    image: 'blue-t-shirt.jpg',
+    image: 'grey-t-shirt.jpg',
     price: 4.99,
     stock: 2,
     quantity: 1
